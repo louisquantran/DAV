@@ -30,13 +30,13 @@ module calculator_top(
     input logic [3:0] op1,
     input logic [3:0] op2, 
     input logic operation,
-    input logic sign,
-    output logic [19:0] result,
+    input logic sign
     
-    // displayEncoder
-    output logic [3:0] numberBits[0:3],
-    output logic [6:0] displayBits[0:3]
 );
+    logic [19:0] result;
+    logic [3:0] numberBits[0:3];
+    logic [6:0] displayBits[0:3];
+    
     miniALU alu_dut (
         .op1(op1),
         .op2(op2),

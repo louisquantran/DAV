@@ -39,7 +39,6 @@ module displayEncoder(
             numberBits[3] = 4'b0;
         end
         else begin 
-            // There is at least one thousand digit
             numberBits[0] = temp / 1000;
             temp = temp % 1000;
             numberBits[1] = temp / 100;

@@ -29,6 +29,8 @@ module stopwatch(
                 if (clk_1khz && !clk_1khz_en) begin
                     clk_1khz_en <= 1'b1;
                     elapsed_time <= elapsed_time + 1;
+                end else if (!clk_1khz && clk_1khz_en) begin
+                    clk_1khz_en <= 1'b0;
                 end
             end
         end

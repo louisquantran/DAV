@@ -2,6 +2,7 @@
 
 module random_gen(
     input logic clk,
+    input logic clk_1khz,
     input logic reset,
     
     input logic generate_num,

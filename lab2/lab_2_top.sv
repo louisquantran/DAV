@@ -26,27 +26,41 @@ module top (
     logic [7:0] delay;
     logic [7:0] delay_next;
     
+    logic start_stop_btn_1hz;
+    logic clk_1hz;
+    always_ff @(posedge clk_1hz or posedge rst) begin
+        if (rst) begin
+            start_stop_btn_1hz <= 1'b0;
+        end else begin
+            if (start_stop_btn) begin
+                start_stop_btn_1hz <= 1'b1;
+            end
+        end
+    end 
+    
+    
     always_comb begin
         set_next = set;
         score_next = score;
         delay_next = delay;
         start_watch_next = start_watch;
         led_sig_next = led_sig;
-        generate_num_next = generate_num;
+        generate_num_next = 1'b0;
         
-        if (start_stop_btn) begin
+        if (start_stop_btn_1hz) begin
             if (!set) begin // SET state
+                led_sig_next = 1'b1;
                 set_next = 1'b1;
                 generate_num_next = 1'b1;
-            end else if (!score) begin // SCORE state
+            end else if (set && !score) begin // SCORE state
                 score_next = 1'b1;
                 start_watch_next = 1'b0;
                 led_sig_next = 1'b0;
             end
-        end else if (generated && set && delay != rand_num) begin // delay period 
+        end else if (generated && set && delay != 100) begin // delay period 
             generate_num_next = 1'b0;
             delay_next = delay_next + 1;
-        end else if (delay == rand_num) begin // GO state
+        end else if (delay == 100) begin // GO state
             set_next = 1'b0;
             delay_next = '0;
             start_watch_next = 1'b1;
@@ -87,6 +101,7 @@ module top (
         .elapsed_time(),
         //sevenseg display
         .an(an),
-        .seg(seg) 
+        .seg(seg),
+        .clk_1hz(clk_1hz)
     );
 endmodule

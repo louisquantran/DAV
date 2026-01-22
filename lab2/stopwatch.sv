@@ -8,7 +8,8 @@ module stopwatch(
     
     //sevenseg display
     output logic [3:0] an,
-    output logic [6:0] seg 
+    output logic [6:0] seg, 
+    output logic clk_1hz 
 );
     logic clk_1khz;
     logic clk_1khz_en;
@@ -18,11 +19,13 @@ module stopwatch(
         .clk(clk),
         .reset(reset),
         .clk_1khz(clk_1khz),
-        .clk_sevenseg(clk_sevenseg)
+        .clk_sevenseg(clk_sevenseg),
+        .clk_1hz(clk_1hz)
     );
     
     always_ff @(posedge clk or posedge reset) begin
         if (reset) begin
+            clk_1khz_en <= 1'b0;
             elapsed_time <= '0;
         end else begin
             if (start_watch) begin
@@ -56,16 +59,17 @@ module stopwatch(
     );
     
     digit_to_ssd u_hundreds(
-        .digit(digits[1]),
-        .display_bits(display_bits[1]) 
+        .digit(digits[2]),
+        .display_bits(display_bits[2]) 
     );
     
     digit_to_ssd u_thousands(
-        .digit(digits[1]),
-        .display_bits(display_bits[1]) 
+        .digit(digits[3]),
+        .display_bits(display_bits[3]) 
     );
     
     basys_ssd u_ssd (
+        .clk(clk),
         .clk_sevenseg(clk_sevenseg),
         .reset(reset),
         .ssd_in(display_bits),

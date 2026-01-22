@@ -1,14 +1,14 @@
 `timescale 1ns / 1ps
 
 module clock_divider(
-    input logic clk_in,
+    input logic clk,
     input logic reset,
     output logic clk_1khz,
     output logic clk_sevenseg   
 );
     logic [16:0] ctr_1khz;
     logic [17:0] ctr_sevenseg;
-    always_ff @(posedge clk_in or posedge reset) begin
+    always_ff @(posedge clk or posedge reset) begin
         if (reset) begin
             clk_1khz <= 1'b1;
             ctr_1khz <= 1'b0;

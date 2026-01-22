@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 
 module stopwatch(
-    input clk,
-    input reset,
-    input start_watch,
+    input logic clk,
+    input logic reset,
+    input logic start_watch,
     output logic [$clog2(10000)-1:0] elapsed_time,
     
     //sevenseg display
@@ -17,7 +17,7 @@ module stopwatch(
     clock_divider u_clock (
         .clk(clk),
         .reset(reset),
-        .clk_out(clk_1khz),
+        .clk_1khz(clk_1khz),
         .clk_sevenseg(clk_sevenseg)
     );
     

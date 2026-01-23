@@ -8,9 +8,9 @@ module stopwatch(
     
     //sevenseg display
     output logic [3:0] an,
-    output logic [6:0] seg
+    output logic [6:0] seg,
+    output logic clk_1khz
 );
-    logic clk_1khz;
     logic clk_1khz_en;
     logic clk_sevenseg;
     

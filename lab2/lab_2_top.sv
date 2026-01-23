@@ -10,6 +10,9 @@ module top (
     output logic led_sig_1,
     output logic led_sig_2
 );  
+    logic clk_1khz;
+    logic clk_1khz_en;
+    
     // FSM
     logic set, score;
     logic set_next, score_next;
@@ -28,8 +31,18 @@ module top (
     logic [7:0] delay;
     logic [7:0] delay_next;
     
-    logic start_stop_btn_1hz;
-    logic clk_1hz;
+    logic start_stop_btn_1khz;
+    always_ff @(posedge clk_1khz or posedge rst) begin
+        if (rst) begin
+            start_stop_btn_1khz <= 1'b0;
+        end else begin
+            if (start_stop_btn && !start_stop_btn_1khz) begin
+                start_stop_btn_1khz <= 1'b1;
+            end else if (!start_stop_btn && start_stop_btn_1khz) begin
+                start_stop_btn_1khz <= 1'b0;
+            end
+        end
+    end
     
     always_comb begin
         set_next = set;
@@ -44,7 +57,7 @@ module top (
             
         end
         
-        if (start_stop_btn) begin
+        if (start_stop_btn_1khz) begin
             if (!set) begin // SET state
                 led_sig_1_next = 1'b1;
                 set_next = 1'b1;
@@ -102,6 +115,7 @@ module top (
         .elapsed_time(),
         //sevenseg display
         .an(an),
-        .seg(seg)
+        .seg(seg),
+        .clk_1khz(clk_1khz)
     );
 endmodule

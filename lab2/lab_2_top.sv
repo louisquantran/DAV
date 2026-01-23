@@ -7,12 +7,14 @@ module top (
     
     output logic [3:0] an,
     output logic [6:0] seg,
-    output logic led_sig
+    output logic led_sig_1,
+    output logic led_sig_2
 );  
     // FSM
     logic set, score;
     logic set_next, score_next;
-    logic led_sig_next;
+    logic led_sig_1_next;
+    logic led_sig_2_next;
     
     // Random number from generator
     logic generate_num;
@@ -28,43 +30,39 @@ module top (
     
     logic start_stop_btn_1hz;
     logic clk_1hz;
-    always_ff @(posedge clk_1hz or posedge rst) begin
-        if (rst) begin
-            start_stop_btn_1hz <= 1'b0;
-        end else begin
-            if (start_stop_btn) begin
-                start_stop_btn_1hz <= 1'b1;
-            end
-        end
-    end 
-    
     
     always_comb begin
         set_next = set;
         score_next = score;
         delay_next = delay;
         start_watch_next = start_watch;
-        led_sig_next = led_sig;
+        led_sig_1_next = led_sig_1;
+        led_sig_2_next = led_sig_2;
         generate_num_next = 1'b0;
+
+        if (!set) begin
+            
+        end
         
-        if (start_stop_btn_1hz) begin
+        if (start_stop_btn) begin
             if (!set) begin // SET state
-                led_sig_next = 1'b1;
+                led_sig_1_next = 1'b1;
                 set_next = 1'b1;
                 generate_num_next = 1'b1;
             end else if (set && !score) begin // SCORE state
                 score_next = 1'b1;
                 start_watch_next = 1'b0;
-                led_sig_next = 1'b0;
+                led_sig_1_next = 1'b0;
+                led_sig_2_next = 1'b0;
             end
-        end else if (generated && set && delay != 100) begin // delay period 
+        end else if (generated && set && delay != rand_num) begin // delay period 
             generate_num_next = 1'b0;
-            delay_next = delay_next + 1;
-        end else if (delay == 100) begin // GO state
+            delay_next = delay + 1;
+        end else if (generated && set && delay == rand_num) begin // GO state
             set_next = 1'b0;
             delay_next = '0;
             start_watch_next = 1'b1;
-            led_sig_next = 1'b1;
+            led_sig_2_next = 1'b1;
         end
     end
     
@@ -74,14 +72,17 @@ module top (
             score <= 1'b0;
             delay <= '0;
             start_watch <= 1'b0;
-            led_sig <= 1'b0;
+            led_sig_1 <= 1'b0;
+            
+            led_sig_2 <= 1'b0;
             generate_num <= 1'b0;
         end else begin 
             set <= set_next;
             score <= score_next;
             delay <= delay_next;
             start_watch <= start_watch_next;
-            led_sig <= led_sig_next;
+            led_sig_1 <= led_sig_1_next;
+            led_sig_2 <= led_sig_2_next;
             generate_num <= generate_num_next;
         end
     end
@@ -101,7 +102,6 @@ module top (
         .elapsed_time(),
         //sevenseg display
         .an(an),
-        .seg(seg),
-        .clk_1hz(clk_1hz)
+        .seg(seg)
     );
 endmodule

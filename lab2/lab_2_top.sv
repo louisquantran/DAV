@@ -66,7 +66,7 @@ module top (
                 led_sig_1_next = 1'b1;
                 set_next = 1'b1;
                 generate_num_next = 1'b1;
-            end else if (set && !score) begin // SCORE state
+            end else if (set && !score && delay_done) begin // SCORE state
                 set_next = 1'b0;
                 score_next = 1'b1;
                 start_watch_next = 1'b0;

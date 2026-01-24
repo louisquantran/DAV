@@ -13,6 +13,7 @@ module tb_lab_2_top;
   wire [6:0] seg;
   wire led_sig_1;
   wire led_sig_2;
+  wire led_sig_3; // add
 
   int t_before_react;
   int t_after_react_1, t_after_react_2;
@@ -25,11 +26,15 @@ module tb_lab_2_top;
     .an(an),
     .seg(seg),
     .led_sig_1(led_sig_1),
-    .led_sig_2(led_sig_2)
+    .led_sig_2(led_sig_2),
+    .led_sig_3(led_sig_3) // connect
   );
 
   // --- Helpers ---
   task automatic press_button_ms(int ms);
+    // Optional: align press to clk_1khz edge so your 1kHz sampling always sees it
+    @(posedge dut.clk_1khz);
+
     $display("[%0t] BUTTON pressed for %0d ms", $time, ms);
     start_stop_btn = 1'b1;
     #(ms * 1_000_000);
@@ -49,24 +54,38 @@ module tb_lab_2_top;
     if (!cond) begin
       $error("[%0t] CHECK FAILED: %s", $time, msg);
       $finish;
-    end
-    else begin
+    end else begin
       $display("[%0t] CHECK PASSED: %s", $time, msg);
     end
   endtask
 
+  // Wait for GO with timeout so TB never hangs
+  task automatic wait_for_go_timeout_ms(int timeout_ms);
+    $display("[%0t] Waiting for GO state (timeout %0d ms)", $time, timeout_ms);
+    fork
+      begin : WAIT_GO
+        @(posedge led_sig_2);
+        $display("[%0t] GO reached!", $time);
+      end
+      begin : TIMEOUT
+        #(timeout_ms * 1_000_000);
+        $error("[%0t] Timeout waiting for GO. rand_num=%0d delay=%0d generated=%0b set=%0b delay_done=%0b",
+               $time, dut.rand_num, dut.delay, dut.generated, dut.set, dut.delay_done);
+        $finish;
+      end
+    join_any
+    disable fork;
+  endtask
+
   // --- LED monitors ---
-  always @(posedge led_sig_1)
-    $display("[%0t] led_sig_1 ASSERTED (SET state)", $time);
+  always @(posedge led_sig_1) $display("[%0t] led_sig_1 ASSERTED (SET state)", $time);
+  always @(negedge led_sig_1) $display("[%0t] led_sig_1 DEASSERTED", $time);
 
-  always @(negedge led_sig_1)
-    $display("[%0t] led_sig_1 DEASSERTED", $time);
+  always @(posedge led_sig_2) $display("[%0t] led_sig_2 ASSERTED (GO state)", $time);
+  always @(negedge led_sig_2) $display("[%0t] led_sig_2 DEASSERTED", $time);
 
-  always @(posedge led_sig_2)
-    $display("[%0t] led_sig_2 ASSERTED (GO state)", $time);
-
-  always @(negedge led_sig_2)
-    $display("[%0t] led_sig_2 DEASSERTED (SCORE state)", $time);
+  always @(posedge led_sig_3) $display("[%0t] led_sig_3 ASSERTED (SCORE state)", $time);
+  always @(negedge led_sig_3) $display("[%0t] led_sig_3 DEASSERTED", $time);
 
   // --- Elapsed time monitor ---
   always @(posedge dut.clk_1khz) begin
@@ -90,35 +109,30 @@ module tb_lab_2_top;
     #(2_000_000);
 
     $display("[%0t] Checking elapsed_time after reset", $time);
-    check(dut.u_sw.elapsed_time == 0,
-          "elapsed_time should be 0 after reset");
+    check(dut.u_sw.elapsed_time == 0, "elapsed_time should be 0 after reset");
 
     // RESET -> SET
     $display("[%0t] ---- RESET -> SET ----", $time);
     press_button_ms(2);
 
     #200;
-    check(led_sig_1 == 1'b1,
-          "led_sig_1 high in SET");
+    check(led_sig_1 == 1'b1, "led_sig_1 high in SET");
 
-    // SET -> GO
-    $display("[%0t] Waiting for GO state", $time);
-    @(posedge led_sig_2);
+    // SET -> GO (give it plenty of time; random could be large)
+    wait_for_go_timeout_ms(400); // 400ms timeout
 
     // GO running
     wait_khz_edges(15);
 
     t_before_react = dut.u_sw.elapsed_time;
-    $display("[%0t] elapsed_time before react = %0d ms",
-             $time, t_before_react);
+    $display("[%0t] elapsed_time before react = %0d ms", $time, t_before_react);
 
     // GO -> SCORE
     $display("[%0t] ---- GO -> SCORE ----", $time);
     press_button_ms(2);
 
     #200;
-    check(dut.start_watch == 1'b0,
-          "start_watch deasserted in SCORE");
+    check(dut.start_watch == 1'b0, "start_watch deasserted in SCORE");
 
     t_after_react_1 = dut.u_sw.elapsed_time;
     wait_khz_edges(5);
@@ -127,11 +141,8 @@ module tb_lab_2_top;
     $display("[%0t] elapsed_time after react = %0d -> %0d",
              $time, t_after_react_1, t_after_react_2);
 
-    check(t_after_react_1 == t_after_react_2,
-          "elapsed_time stopped counting in SCORE");
-
-    check((t_after_react_1 >= 12) && (t_after_react_1 <= 25),
-          "reaction time roughly ~15ms");
+    check(t_after_react_1 == t_after_react_2, "elapsed_time stopped counting in SCORE");
+    check((t_after_react_1 >= 12) && (t_after_react_1 <= 25), "reaction time roughly ~15ms");
 
     $display("[%0t] ALL TESTS PASSED 🎉", $time);
     $finish;

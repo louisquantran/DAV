@@ -9,7 +9,8 @@ module stopwatch(
     //sevenseg display
     output logic [3:0] an,
     output logic [6:0] seg,
-    output logic clk_1khz
+    output logic clk_1khz,
+    output logic clk_500hz
 );
     logic clk_1khz_en;
     logic clk_sevenseg;
@@ -18,7 +19,8 @@ module stopwatch(
         .clk(clk),
         .reset(reset),
         .clk_1khz(clk_1khz),
-        .clk_sevenseg(clk_sevenseg)
+        .clk_sevenseg(clk_sevenseg),
+        .clk_500hz(clk_500hz)
     );
     
     always_ff @(posedge clk or posedge reset) begin

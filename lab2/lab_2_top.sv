@@ -11,9 +11,9 @@ module top (
     output logic led_sig_2,
     output logic led_sig_3
 );  
-    logic clk_1khz;
-    logic clk_1khz_en;
-    
+    logic clk_1khz;    
+    logic clk_500hz;
+        
     // FSM
     logic set, score;
     logic set_next, score_next;
@@ -33,26 +33,37 @@ module top (
     logic [7:0] delay;
     logic [7:0] delay_next;
     logic delay_done;
+    logic delay_done_next;
     
-    logic start_stop_btn_1khz;
-    always_ff @(posedge clk_1khz or posedge rst) begin
+    logic start_stop_btn_1p;
+    always_ff @(posedge clk_500hz or posedge rst) begin
         if (rst) begin
-            start_stop_btn_1khz <= 1'b0;
-            delay <= '0;
+            start_stop_btn_1p <= 1'b0;
         end else begin
-            if (start_stop_btn && !start_stop_btn_1khz) begin
-                start_stop_btn_1khz <= 1'b1;
-            end else if (!start_stop_btn && start_stop_btn_1khz) begin
-                start_stop_btn_1khz <= 1'b0;
+            if (start_stop_btn && !start_stop_btn_1p) begin
+                start_stop_btn_1p <= 1'b1;
+            end else if (!start_stop_btn && start_stop_btn_1p) begin
+                start_stop_btn_1p <= 1'b0;
             end
-            
-            if (!delay_done) begin
+        end
+    end
+    
+    always_ff @(posedge clk_500hz or posedge rst) begin
+        if (rst) begin
+            delay <= '0;
+            delay_done <= '0;
+        end else begin
+            delay_done <= delay_done_next;
+            if (set && !delay_done_next) begin
                 delay <= delay_next + 1;
+            end else begin
+                delay <= '0;
             end
         end
     end
     
     always_comb begin
+        delay_done_next = delay_done;
         set_next = set;
         score_next = score;
         delay_next = delay;
@@ -61,10 +72,10 @@ module top (
         led_sig_2_next = led_sig_2;
         led_sig_3_next = led_sig_3;
         generate_num_next = 1'b0;
-        if (start_stop_btn_1khz) begin
+        if (start_stop_btn_1p) begin
             if (!set) begin // SET state
-                led_sig_1_next = 1'b1;
-                set_next = 1'b1;
+                set_next        = 1'b1;
+                led_sig_1_next  = 1'b1;
                 generate_num_next = 1'b1;
             end else if (set && !score && delay_done) begin // SCORE state
                 set_next = 1'b0;
@@ -73,21 +84,18 @@ module top (
                 led_sig_2_next = 1'b0;
                 led_sig_3_next = 1'b1;
             end
-        end else if (generated && set && delay != 8'b10000000 && !delay_done) begin // delay period 
-            generate_num_next = 1'b0;
-        end else if (generated && set && delay == 8'b10000000 && !delay_done) begin // GO state
-            delay_done = 1'b1;
+        end else if (generated && set && delay == rand_num && !delay_done) begin // GO state
+            delay_done_next = 1'b1;
             start_watch_next = 1'b1;
             led_sig_1_next = 1'b0;
             led_sig_2_next = 1'b1;
         end
     end
     
-    always_ff @(posedge clk or posedge rst) begin
+    always_ff @(posedge clk_500hz or posedge rst) begin
         if (rst) begin
             set <= 1'b0;
             score <= 1'b0;
-            delay <= '0;
             start_watch <= 1'b0;
             led_sig_1 <= 1'b0;
             led_sig_2 <= 1'b0;
@@ -105,7 +113,7 @@ module top (
     end
     
     random_gen u_gen (
-        .clk(clk),
+        .clk(clk_500hz),
         .reset(rst),
         .generate_num(generate_num),
         .rand_num(rand_num),
@@ -120,6 +128,6 @@ module top (
         //sevenseg display
         .an(an),
         .seg(seg),
-        .clk_1khz(clk_1khz)
+        .clk_500hz(clk_500hz)
     );
 endmodule

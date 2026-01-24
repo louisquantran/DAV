@@ -44,6 +44,7 @@ module tb_random_gen;
              $time, generate_num, generated, rand_num);
   end
 
+    logic [7:0] hold_val;
   initial begin
     $timeformat(-9, 3, " ns", 12);
     $display("[%0t] TB start", $time);
@@ -75,7 +76,6 @@ module tb_random_gen;
 
     // --- Test 2: second pulse should NOT change (because generated stays 1) ---
     $display("\n[%0t] TEST 2: Second generate pulse (should NOT change)", $time);
-    logic [7:0] hold_val;
     hold_val = rand_num;
 
     pulse_generate();

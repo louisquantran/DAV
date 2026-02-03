@@ -6,7 +6,7 @@ This project is currently in progress (DAV at IEEE)
 ### Goal
 Implement and verify a simple **ALU (Arithmetic Logic Unit)** and display its result on the Basys 3 **four-digit seven-segment display**.
 
-### What I Built
+### Implementation Overview
 - **`miniALU.sv`** (combinational)
   - Operates on two 4-bit operands (`op1`, `op2`)
   - Mode select:

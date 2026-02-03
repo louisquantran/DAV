@@ -1,7 +1,7 @@
 # Digital-Audio-Visualizer-DAV
 This project is currently in progress (DAV at IEEE)
 
-## Lab 1 (Mini ALU + Seven-Segment Display)
+## Lab 1: Beep Boop (Mini ALU + Seven-Segment Display)
 
 ### Goal
 Implement and verify a simple **ALU (Arithmetic Logic Unit)** and display its result on the Basys 3 **four-digit seven-segment display**.
@@ -27,7 +27,7 @@ Implement and verify a simple **ALU (Arithmetic Logic Unit)** and display its re
   - `7 << 5 = 224`
   - `7 >> 5 = 0`
 
-## Lab 2 — Reaction Time Tester (Clocking + Stopwatch + RNG + FSM)
+## Lab 2: Reaction Time Tester (Clocking + Stopwatch + RNG + FSM)
 
 ### Goal
 Build a reaction-time game:

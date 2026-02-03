@@ -1,7 +1,7 @@
 # Digital-Audio-Visualizer-DAV
 This project is currently in progress (DAV at IEEE)
 
-## Lab 1 — Beep Boop (Mini ALU + Seven-Segment Display)
+## Lab 1 (Mini ALU + Seven-Segment Display)
 
 ### Goal
 Implement and verify a simple **ALU (Arithmetic Logic Unit)** and display its result on the Basys 3 **four-digit seven-segment display**.
@@ -26,16 +26,6 @@ Implement and verify a simple **ALU (Arithmetic Logic Unit)** and display its re
   - `7 - 5 = 2`
   - `7 << 5 = 224`
   - `7 >> 5 = 0`
-
-### How to Run (Vivado)
-1. Create a Vivado project for Basys 3.
-2. Add RTL sources for Lab 1 modules.
-3. Add simulation sources (testbenches) and run simulation.
-4. Set `calculator_top.sv` as top, add `.xdc` constraints, then:
-   - Run Synthesis → Run Implementation → Generate Bitstream
-5. Program the board via Hardware Manager.
-
----
 
 ## Lab 2 — Reaction Time Tester (Clocking + Stopwatch + RNG + FSM)
 

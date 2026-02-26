@@ -31,11 +31,13 @@ module vga(
   localparam HFP      = 16;    // length (in pixels) of horizontal front porch
   localparam HSPULSE  = 96;    // length (in pixels) of hsync pulse
   localparam HBP      = 48;    // length (in pixels) of horizontal back porch
+  localparam HTOTAL = HPIXELS + HFP + HSPULSE + HBP;
 
   localparam VPIXELS  = 480;    // number of visible horizontal lines per frame
-  localparam VFP      = 11;    // length (in pixels) of vertical front porch
+  localparam VFP      = 10;    // length (in pixels) of vertical front porch
   localparam VSPULSE  = 2;    // length (in pixels) of vsync pulse
-  localparam VBP      = 31;    // length (in pixels) of vertical back porch 
+  localparam VBP      = 33;    // length (in pixels) of vertical back porch 
+  localparam VTOTAL = VPIXELS + VFP + VSPULSE + VBP;
 
   /* no need to mess with this -- this is a basic sanity check that will
    * cause the compiler to yell at you if the values above don't add up
@@ -78,24 +80,22 @@ module vga(
       hc <= 0;
       vc <= 0;
     end
-    else if (hc == HPIXELS) begin
+    else if (hc == HTOTAL-1) begin
       hc <= 0;
-      vc <= vc + 1;
-    end
-    else if (vc == VPIXELS) begin
-      if (hc == HPIXELS) begin
-        hc <= 0;
+      if (vc == VTOTAL - 1) begin
         vc <= 0;
+      end else begin
+        vc <= vc + 1;
       end
     end else begin
-      hc 
+      hc <= hc + 1;
     end
   end
 
   /* TODO(3): when should hsync and vsync go low?
   */
-  assign hsync = (hc < HPIXELS) ? 1 : 0;
-  assign vsync = (vc < VPIXELS) ? 1 : 0;
+  assign hsync = (hc >= HPIXELS + HFP && hc < HPIXELS + HFP + HSPULSE) ? 0 : 1;
+  assign vsync = (vc >= VPIXELS + VFP && vc < VPIXELS + VFP + VSPULSE) ? 0 : 1;
 
   // in the combinational block, we set red, green, blue outputs
   always_comb
@@ -108,7 +108,7 @@ module vga(
     */
     if (vc < VPIXELS && hc < HPIXELS) begin
       red = input_red << 1;
-      green = input_gree << 1;
+      green = input_green << 1;
       blue = input_blue << 2;
     end else begin
       red = 0;

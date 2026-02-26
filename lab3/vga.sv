@@ -27,15 +27,15 @@ module vga(
          You can find these described in the VGA specification
          for a 640x480 display.
   */
-  localparam HPIXELS  = 0;    // number of visible pixels per horizontal line
-  localparam HFP      = 0;    // length (in pixels) of horizontal front porch
-  localparam HSPULSE  = 0;    // length (in pixels) of hsync pulse
-  localparam HBP      = 0;    // length (in pixels) of horizontal back porch
+  localparam HPIXELS  = 640;    // number of visible pixels per horizontal line
+  localparam HFP      = 16;    // length (in pixels) of horizontal front porch
+  localparam HSPULSE  = 96;    // length (in pixels) of hsync pulse
+  localparam HBP      = 48;    // length (in pixels) of horizontal back porch
 
-  localparam VPIXELS  = 0;    // number of visible horizontal lines per frame
-  localparam VFP      = 0;    // length (in pixels) of vertical front porch
-  localparam VSPULSE  = 0;    // length (in pixels) of vsync pulse
-  localparam VBP      = 0;    // length (in pixels) of vertical back porch
+  localparam VPIXELS  = 480;    // number of visible horizontal lines per frame
+  localparam VFP      = 11;    // length (in pixels) of vertical front porch
+  localparam VSPULSE  = 2;    // length (in pixels) of vsync pulse
+  localparam VBP      = 31;    // length (in pixels) of vertical back porch 
 
   /* no need to mess with this -- this is a basic sanity check that will
    * cause the compiler to yell at you if the values above don't add up
@@ -74,14 +74,28 @@ module vga(
               a) the reset condition, and
               b) the conditions that cause hc and vc to go back to 0
     */
-    hc <= 0;
-    vc <= 0;
+    if (rst) begin
+      hc <= 0;
+      vc <= 0;
+    end
+    else if (hc == HPIXELS) begin
+      hc <= 0;
+      vc <= vc + 1;
+    end
+    else if (vc == VPIXELS) begin
+      if (hc == HPIXELS) begin
+        hc <= 0;
+        vc <= 0;
+      end
+    end else begin
+      hc 
+    end
   end
 
   /* TODO(3): when should hsync and vsync go low?
   */
-  assign hsync = 1;
-  assign vsync = 1;
+  assign hsync = (hc < HPIXELS) ? 1 : 0;
+  assign vsync = (vc < VPIXELS) ? 1 : 0;
 
   // in the combinational block, we set red, green, blue outputs
   always_comb
@@ -92,9 +106,15 @@ module vga(
         NOTE: our inputs are fewer bits than the outputs,
               so left-shift accordingly!
     */
-    red = 0;
-    green = 0;
-    blue = 0;
+    if (vc < VPIXELS && hc < HPIXELS) begin
+      red = input_red << 1;
+      green = input_gree << 1;
+      blue = input_blue << 2;
+    end else begin
+      red = 0;
+      green = 0;
+      blue = 0;
+    end
   end
 
 endmodule
